@@ -1,0 +1,22 @@
+#!/bin/bash
+ruta=`pwd`
+if [ ! -f Hash.txt ] 
+then
+sha256sum * > Hash.txt
+fi
+echo -e "\n\n=========================================================" >> Hash.txt
+echo -e "Informacion de la Carpeta <<"$(basename "$ruta")">>" >> Hash.txt
+echo -e "=========================================================" >> Hash.txt
+contPdf=$(ls *.pdf 2>/tmp/null | wc -l)
+contISCSV=$(ls *.ISCSV 2>/tmp/null | wc -l)
+contExcel=$(ls *.x* 2>/tmp/null | wc -l)
+contTxt=$(ls *.txt 2>/tmp/null | wc -l)
+contTotal=$(ls *.* 2>/tmp/null | wc -l)
+contOtros=0
+((contOtros=$contTotal-$contPdf-$contISCSV-$contExcel-$contTxt))
+echo -e "Numero de archivos PDF: $contPdf" >> Hash.txt
+echo -e "Numero de archivos ISCSV: $contISCSV" >> Hash.txt
+echo -e "Numero de archivos EXCEL: $contExcel" >> Hash.txt
+echo -e "Numero de archivos TEXTO: $contTxt" >> Hash.txt
+echo -e "Otros Archivos: $contOtros" >> Hash.txt
+echo -e "Total de Archivos: $contTotal" >> Hash.txt
