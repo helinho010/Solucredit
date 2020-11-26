@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Para ejecutar este script se necesita estar dentro de la carpeta, asi este
+# puede generar el hash y el reporte de la carpeta 
+
 ruta=`pwd`
 if [ ! -f Hash.txt ] 
 then
