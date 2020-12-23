@@ -1,9 +1,12 @@
-#!/bin/bash
+ #!/bin/bash
+####### Parametros ########## 
+# Horas que deberia estar disponibles el servidor [min]
+hd=600
+
+# 
 
 #Establecer la direccion del servidor a testear
 servidor="192.168.2.90"
-
-####### Parametros ########## 
 
 #rutaArchivoDiagnostico
 rarch="/home/ubuntu/Desktop"
