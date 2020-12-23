@@ -40,12 +40,12 @@ function armadoArchivoMail()
   numeroPaquetesPerdidos2=${var#*ved,}
   numeroPaquetesPerdidos=${numeroPaquetesPerdidos2%,*ms}
 
-  echo -e "From: 'George' <g.apaza007@gmail.com>" > /home/ubuntu/mail.txt
-  echo -e "To: 'Helio' <hmejia@solucredit.com.bo>" >> /home/ubuntu/mail.txt
-  echo -e "Subject: Error-Disponibilidad-del-servidor" >> /home/ubuntu/mail.txt
-  echo -e "\n $numeroPaquetesTransmitidos \n" >> /home/ubuntu/mail.txt 
-  echo -e "\n $numeroPaquetesRecividos \n" >> /home/ubuntu/mail.txt
-  echo -e "\n $numeroPaquetesPerdidos \n" >> /home/ubuntu/mail.txt
+  echo -e "From: 'George' <g.apaza007@gmail.com>" > $rarch/mail.txt
+  echo -e "To: 'Helio' <hmejia@solucredit.com.bo>" >> $rarch/mail.txt
+  echo -e "Subject: Error-Disponibilidad-del-servidor" >> $rarch/mail.txt
+  echo -e "\n $numeroPaquetesTransmitidos \n" >> $rarch/mail.txt
+  echo -e "\n $numeroPaquetesRecividos \n" >> $rarch/mail.txt
+  echo -e "\n $numeroPaquetesPerdidos \n" >> $rarch/mail.txt
 
 }
 
@@ -54,7 +54,7 @@ function armadoArchivoMail()
 
 function alertaCaida()
 {
-  curl -n --ssl-reqd --mail-from $nombreUsuario --mail-rcpt "hmejia@solucredit.com.bo" --url smtps://smtp.gmail.com:465 --user "$nombreUsuario:$contrasenia" --upload-file /home/ubuntu/mail.txt
+  curl -n --ssl-reqd --mail-from $nombreUsuario --mail-rcpt "hmejia@solucredit.com.bo" --url smtps://smtp.gmail.com:465 --user "$nombreUsuario:$contrasenia" --upload-file $rarch/mail.txt
 }
 
   # Tiempo de sondeo en segundos 
