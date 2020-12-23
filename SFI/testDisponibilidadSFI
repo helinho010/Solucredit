@@ -5,6 +5,9 @@ servidor="192.168.2.90"
 
 ####### Parametros ########## 
 
+#rutaArchivoDiagnostico
+rarch="/home/ubuntu/Desktop"
+
 # Numeros de paquetes a enviar
 numPaquetes=$1
 numPaquetes=${numPaquetes:-1}
@@ -21,7 +24,6 @@ nombreUsuario="g.apaza007@gmail.com"
 # funcion que captura  la respuesta del comando ping con un envio ICMP
 function capturaPing()
 {
- 
  echo $(ping -O -D -c $numPaquetes -i $tiempoEntrePaquetes $servidor | grep "packets transmitted") 
 }
 
@@ -29,10 +31,22 @@ function capturaPing()
 function armadoArchivoMail()
 {
   var=$(capturaPing)
+  # Paquetes transmitidos
+  numeroPaquetesTransmitidos=${var%,*ved*}
+  # paquetes recividos
+  numeroPaquetesRecividos2=${var#*tted,}
+  numeroPaquetesRecividos=${numeroPaquetesRecividos2%,*loss*}
+  # paquetes Perdidos
+  numeroPaquetesPerdidos2=${var#*ved,}
+  numeroPaquetesPerdidos=${numeroPaquetesPerdidos2%,*ms}
+
   echo -e "From: 'George' <g.apaza007@gmail.com>" > /home/ubuntu/mail.txt
   echo -e "To: 'Helio' <hmejia@solucredit.com.bo>" >> /home/ubuntu/mail.txt
   echo -e "Subject: Error-Disponibilidad-del-servidor" >> /home/ubuntu/mail.txt
-  echo -e "\n $var \n" >> /home/ubuntu/mail.txt
+  echo -e "\n $numeroPaquetesTransmitidos \n" >> /home/ubuntu/mail.txt 
+  echo -e "\n $numeroPaquetesRecividos \n" >> /home/ubuntu/mail.txt
+  echo -e "\n $numeroPaquetesPerdidos \n" >> /home/ubuntu/mail.txt
+
 }
 
 
@@ -40,14 +54,13 @@ function armadoArchivoMail()
 
 function alertaCaida()
 {
-  
   curl -n --ssl-reqd --mail-from $nombreUsuario --mail-rcpt "hmejia@solucredit.com.bo" --url smtps://smtp.gmail.com:465 --user "$nombreUsuario:$contrasenia" --upload-file /home/ubuntu/mail.txt
 }
 
   # Tiempo de sondeo en segundos 
   ts=3
  contador=0
- rng=85
+ rng=100
  while [ $contador -lt 4 ]
   do
   sleep $ts
@@ -60,6 +73,8 @@ function alertaCaida()
      echo -e "\n contador: $contador \n "
     else
      echo -e "\n \033[1;33m ya se paso del rango \033[0m \n"
+     armadoArchivoMail
+     break
    # alertaCaida
   fi
  ((contador=$contador+1))
