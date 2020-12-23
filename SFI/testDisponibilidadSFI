@@ -21,7 +21,8 @@ nombreUsuario="g.apaza007@gmail.com"
 # funcion que captura  la respuesta del comando ping con un envio ICMP
 function capturaPing()
 {
-  echo $(ping -O -D -c $numPaquetes -i $tiempoEntrePaquetes $servidor | grep "packets transmitted") 
+ 
+ echo $(ping -O -D -c $numPaquetes -i $tiempoEntrePaquetes $servidor | grep "packets transmitted") 
 }
 
 # Funcion de llenao de archivo email
@@ -43,7 +44,25 @@ function alertaCaida()
   curl -n --ssl-reqd --mail-from $nombreUsuario --mail-rcpt "hmejia@solucredit.com.bo" --url smtps://smtp.gmail.com:465 --user "$nombreUsuario:$contrasenia" --upload-file /home/ubuntu/mail.txt
 }
 
-
-#armadoArchivoMail
-#alertaCaida
+  # Tiempo de sondeo en segundos 
+  ts=3
+ contador=0
+ rng=85
+ while [ $contador -lt 4 ]
+  do
+  sleep $ts
+  # Variable que mide el rando
+  #armadoArchivoMail
+  if [[ $rng -lt 100 && $rng -gt 80 ]]
+    then
+     echo -e "\n \033[0;34m Esta disponible \033[0m \e[1;36m bravo! \033[0m \n"
+     echo -e "\n rango: $rng \n "
+     echo -e "\n contador: $contador \n "
+    else
+     echo -e "\n \033[1;33m ya se paso del rango \033[0m \n"
+   # alertaCaida
+  fi
+ ((contador=$contador+1))
+ ((rng=$rng+5))
+ done
 
