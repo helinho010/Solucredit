@@ -1,0 +1,49 @@
+#!/bin/bash
+
+#Establecer la direccion del servidor a testear
+servidor="192.168.2.90"
+
+####### Parametros ########## 
+
+# Numeros de paquetes a enviar
+numPaquetes=$1
+numPaquetes=${numPaquetes:-1}
+
+# Tiempo entre paquetes
+tiempoEntrePaquetes=$2
+tiempoEntrePaquetes=${tiempoEntrePaquetes:-2}
+
+# Email predeterminado para el envio de la alerta
+nombreUsuario="g.apaza007@gmail.com"
+
+#############################
+
+# funcion que captura  la respuesta del comando ping con un envio ICMP
+function capturaPing()
+{
+  echo $(ping -O -D -c $numPaquetes -i $tiempoEntrePaquetes $servidor | grep "packets transmitted") 
+}
+
+# Funcion de llenao de archivo email
+function armadoArchivoMail()
+{
+  var=$(capturaPing)
+  echo -e "From: 'George' <g.apaza007@gmail.com>" > /home/ubuntu/mail.txt
+  echo -e "To: 'Helio' <hmejia@solucredit.com.bo>" >> /home/ubuntu/mail.txt
+  echo -e "Subject: Error-Disponibilidad-del-servidor" >> /home/ubuntu/mail.txt
+  echo -e "\n $var \n" >> /home/ubuntu/mail.txt
+}
+
+
+# Funcion que envia un correo electronico o sms a una determinado contacto
+
+function alertaCaida()
+{
+  
+  curl -n --ssl-reqd --mail-from $nombreUsuario --mail-rcpt "hmejia@solucredit.com.bo" --url smtps://smtp.gmail.com:465 --user "$nombreUsuario:$contrasenia" --upload-file /home/ubuntu/mail.txt
+}
+
+
+#armadoArchivoMail
+#alertaCaida
+
