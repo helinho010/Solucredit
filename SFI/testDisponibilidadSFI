@@ -45,6 +45,7 @@ function capturaPing()
 {
   ((numPaquetes=$tping*60))
   resultadoPing=$(ping -q -c $numPaquetes $servidor | grep "packets transmitted")
+   
     #Paquetes transmitidos
     npt=${resultadoPing%,*ved*}
     npt=${npt%\ *packets transmitted}
@@ -60,9 +61,9 @@ function capturaPing()
     npp=${npp%\%*packet loss}
     npp=$(echo $npp | tr -d '[[:space:]]')
 
-    npt=${npt:-10}
-    npr=${npr:-10}
-    npp=${npp:-10}
+    npt=${npt:-0}
+    npr=${npr:-0}
+    npp=${npp:-50}
     ((numeroPaquetesTransmitidos=$numeroPaquetesTransmitidos+$npt))
     ((numeroPaquetesRecividos=$numeroPaquetesRecividos+$npr))
     ((numeroPaquetesPerdidos=$numeroPaquetesPerdidos+$npp))
