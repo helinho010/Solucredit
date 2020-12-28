@@ -1,6 +1,7 @@
 #!/bin/bash
 
 ################################### Parametros ############################################### 
+
 # Horas que deberia estar disponibles el servidor [min]
 hd=600 
 
@@ -10,8 +11,8 @@ servidor="192.168.2.90"
 #rutaArchivoDiagnostico
 rarch="/home/ubuntu/Desktop"
 
-# Tiempo para realizar el Ping 
-tping=1
+# Tiempo para realizar el Ping en minutos [min] 
+tping=2
 
 # Numeros de paquetes a enviar
 numPaquetes=$1
@@ -28,7 +29,16 @@ nombreUsuario="g.apaza007@gmail.com"
 numeroPaquetesTransmitidos=0
 numeroPaquetesRecividos=0
 numeroPaquetesPerdidos=0
-resulping=0
+resultadoPing=""
+
+# Colores
+rojo="\e[1;31m"
+verde="\e[1;32m"
+amarillo="\e[1;33m"
+azul="\e[1;34m"
+lila="\e[1;35m"
+turquesa="\e[1;36m"
+cerrarColor="\e[0m"
 
 ################################################################################################
 
@@ -43,9 +53,9 @@ function alertaCaida()
 # funcion que captura  la respuesta del comando ping con un envio ICMP
 function capturaPing()
 {
-  ((numPaquetes=$tping*60))
+  ((numPaquetes=$tping*10))
   resultadoPing=$(ping -q -c $numPaquetes $servidor | grep "packets transmitted")
-   
+  resultadoPing=${resultadoPing/,\ +*errors,/","}
     #Paquetes transmitidos
     npt=${resultadoPing%,*ved*}
     npt=${npt%\ *packets transmitted}
@@ -63,7 +73,8 @@ function capturaPing()
 
     npt=${npt:-0}
     npr=${npr:-0}
-    npp=${npp:-50}
+    npp=${npp:-30}
+
     ((numeroPaquetesTransmitidos=$numeroPaquetesTransmitidos+$npt))
     ((numeroPaquetesRecividos=$numeroPaquetesRecividos+$npr))
     ((numeroPaquetesPerdidos=$numeroPaquetesPerdidos+$npp))
@@ -71,40 +82,60 @@ function capturaPing()
 }
 
 # Funcion de llenao de archivo email
+
 function armadoArchivoMail()
 {
   echo -e "From: 'George' <g.apaza007@gmail.com>" > $rarch/mail.txt
   echo -e "To: 'Helio' <hmejia@solucredit.com.bo>" >> $rarch/mail.txt
   echo -e "Subject: Alerta-Servidor-En-Riesgo" >> $rarch/mail.txt
-  echo -e "\n NUMERO DE PAQUETES TRANSMITIDOS: $numeroPaquetesTransmitidos \n" >> $rarch/mail.txt
-  echo -e "\n NUMERO DE PAQUETES RECIBIDOS: $numeroPaquetesRecividos \n" >> $rarch/mail.txt
-  echo -e "\n PORCENTAJE DE PAQUETES PERDIDOS: $numeroPaquetesPerdidos \n" >> $rarch/mail.txt
-
+  echo -e "\n\n=============== Informacion de estadisticas del servidor ================" >> $rarch/mail.txt
+  echo -e "= NUMERO DE PAQUETES TRANSMITIDOS: $numeroPaquetesTransmitidos                                    =" >> $rarch/mail.txt
+  echo -e "= NUMERO DE PAQUETES RECIBIDOS: $numeroPaquetesRecividos                                       =" >> $rarch/mail.txt
+  echo -e "= PORCENTAJE DE PAQUETES PERDIDOS: $numeroPaquetesPerdidos                                   =" >> $rarch/mail.txt
+  echo -e "=========================================================================" >> $rarch/mail.txt
 }
 
+
+
+# Funcion principal
+
 #function main()
-#{
+#{ 
   # Tiempo de sondeo en segundos
   ts=5
   contador=0
-  while [ $contador -lt 2 ]
+  while [ $contador -lt 1 ]
   do
     capturaPing
     ((contador=$contador+1))
     sleep $ts
   done
+  # datos de la fecha y hora
+  fechaHoraInicial=$(date +'%x %X')
+  (cat $rarch/diagnostico.txt | grep -w Informacion) 2>/dev/null 1>/dev/null
+  if [[ $? == 0 ]]
+  then
+   echo " " > /dev/null
+  else
+	echo -e "\n fecha			Informacion" >> ${rarch}/diagnostico.txt 
+        echo -e " =====			===========" >> ${rarch}/diagnostico.txt
+  fi
+
    if [[ $numeroPaquetesPerdidos -eq 0 ]]
     then
-     echo -e "\n \033[0;34m Esta disponible al 100% \033[0m \e[1;36m bravo! ::: $numeroPaquetesPerdidos \033[0m \n"
+	echo -e "[++] $fechaHoraInicial	Paquetes Transmitidos: ${numeroPaquetesTransmitidos}, Paquetes Recividos: ${numeroPaquetesRecividos}, Paquetes perdidos: ${numeroPaquetesPerdidos}%" >> ${rarch}/diagnostico.txt
+	cat ${rarch}/diagnostico.txt
     else
-     if  [[ $numeroPaquetesPerdidos -le 10 && $numeroPaquetesPerdidos -gt 0 ]]
+     if  [[ $numeroPaquetesPerdidos -le 30 && $numeroPaquetesPerdidos -gt 0 ]]
      then
-	echo -e "\n \033[0;34m Alerta de intermitencia, los paquetes o el porcentaje de paquetes perdidos esta entre 0 y 10% \033[0m :::: $numeroPaquetesPerdidos\n"
-
+	echo -e "[+-] $fechaHoraInicial	Paquetes Transmitidos: ${numeroPaquetesTransmitidos}, Paquetes Recividos: ${numeroPaquetesRecividos}, Paquetes perdidos: ${numeroPaquetesPerdidos}%" >> ${rarch}/diagnostico.txt
+	cat ${rarch}/diagnostico.txt
      else
-    	echo -e "\n \033[0;34m Alerta de intermitencia ALTA, puede llevar a una perdida de servicio  \033[0m  ::: $numeroPaquetesPerdidos\n"
         armadoArchivoMail
-	cat $rarch/mail.txt
+	#alertaCaida
+	echo -e "[--] $fechaHoraInicial	Paquetes Transmitidos: ${numeroPaquetesTransmitidos}, Paquetes Recividos: ${numeroPaquetesRecividos}, Paquetes perdidos: ${numeroPaquetesPerdidos}%" >> ${rarch}/diagnostico.txt
+	cat ${rarch}/diagnostico.txt
+	cat ${rarch}/mail.txt
      fi
    fi
 #}
